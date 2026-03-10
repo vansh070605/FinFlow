@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finsight – Expense Manager</title>
+  <meta name="description" content="A powerful offline expense manager to track your spendings by week, month, year, or custom date range with category insights." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f1117" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== SIDEBAR NAV ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">💎</span>
+    <span class="logo-text">Finsight</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#" class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)">
+      <span class="nav-icon">🏠</span><span>Dashboard</span></a></li>
+    <li><a href="#" class="nav-item" data-page="transactions" onclick="showPage('transactions',this)">
+      <span class="nav-icon">📋</span><span>Transactions</span></a></li>
+    <li><a href="#" class="nav-item" data-page="analysis" onclick="showPage('analysis',this)">
+      <span class="nav-icon">📊</span><span>Analysis</span></a></li>
+    <li><a href="#" class="nav-item" data-page="budgets" onclick="showPage('budgets',this)">
+      <span class="nav-icon">🎯</span><span>Budgets</span></a></li>
+    <li><a href="#" class="nav-item" data-page="accounts" onclick="showPage('accounts',this)">
+      <span class="nav-icon">🏦</span><span>Accounts</span></a></li>
+    <li><a href="#" class="nav-item" data-page="settings" onclick="showPage('settings',this)">
+      <span class="nav-icon">⚙️</span><span>Settings</span></a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar" id="sidebarAvatar">V</div>
+      <div>
+        <div class="user-name" id="sidebarName">User</div>
+        <div class="user-sub">Personal Finance</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== MOBILE BOTTOM NAV ===== -->
+<nav class="bottom-nav" id="bottomNav">
+  <a href="#" class="bn-item active" data-page="dashboard" onclick="showPage('dashboard',this)">
+    <span>🏠</span><span>Home</span></a>
+  <a href="#" class="bn-item" data-page="transactions" onclick="showPage('transactions',this)">
+    <span>📋</span><span>Txns</span></a>
+  <a href="#" class="bn-item fab-center" id="fabBtn" onclick="openAddModal()">
+    <span class="fab-plus">+</span></a>
+  <a href="#" class="bn-item" data-page="analysis" onclick="showPage('analysis',this)">
+    <span>📊</span><span>Analysis</span></a>
+  <a href="#" class="bn-item" data-page="settings" onclick="showPage('settings',this)">
+    <span>⚙️</span><span>More</span></a>
+</nav>
+
+<!-- ===== FLOATING ADD BUTTON (desktop) ===== -->
+<button class="fab-desktop" onclick="openAddModal()" title="Add Transaction">+</button>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content" id="mainContent">
+
+  <!-- DASHBOARD PAGE -->
+  <section class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub" id="dashGreeting">Good morning 👋</p>
+      </div>
+      <div class="header-actions">
+        <div class="period-tabs" id="dashPeriodTabs">
+          <button class="ptab active" onclick="setDashPeriod('week',this)">Week</button>
+          <button class="ptab" onclick="setDashPeriod('month',this)">Month</button>
+          <button class="ptab" onclick="setDashPeriod('year',this)">Year</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="cards-grid">
+      <div class="card card-expense glow-red">
+        <div class="card-label">Total Spent</div>
+        <div class="card-amount" id="dashSpent">₹0</div>
+        <div class="card-sub" id="dashSpentSub">This week</div>
+      </div>
+      <div class="card card-income glow-green">
+        <div class="card-label">Total Income</div>
+        <div class="card-amount" id="dashIncome">₹0</div>
+        <div class="card-sub" id="dashIncomeSub">This week</div>
+      </div>
+      <div class="card card-balance glow-blue">
+        <div class="card-label">Net Balance</div>
+        <div class="card-amount" id="dashBalance">₹0</div>
+        <div class="card-sub">Income − Expense</div>
+      </div>
+      <div class="card card-txn glow-purple">
+        <div class="card-label">Transactions</div>
+        <div class="card-amount" id="dashTxnCount">0</div>
+        <div class="card-sub" id="dashTxnSub">This week</div>
+      </div>
+    </div>
+
+    <!-- Spending Overview Chart -->
+    <div class="section-block">
+      <div class="section-header">
+        <h2 class="section-title">Spending Overview</h2>
+        <span class="section-badge" id="dashChartLabel">Last 7 days</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="overviewChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="two-col">
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">By Category</h2>
+        </div>
+        <div class="chart-wrap small">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">Recent Transactions</h2>
+          <a href="#" class="see-all" onclick="showPage('transactions',null)">See all →</a>
+        </div>
+        <div class="txn-list" id="dashRecentList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRANSACTIONS PAGE -->
+  <section class="page" id="page-transactions">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Transactions</h1>
+        <p class="page-sub" id="txnCount">0 records</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Period</label>
+        <div class="period-tabs" id="txnPeriodTabs">
+          <button class="ptab active" onclick="setTxnPeriod('all',this)">All</button>
+          <button class="ptab" onclick="setTxnPeriod('week',this)">Week</button>
+          <button class="ptab" onclick="setTxnPeriod('month',this)">Month</button>
+          <button class="ptab" onclick="setTxnPeriod('year',this)">Year</button>
+          <button class="ptab" onclick="setTxnPeriod('custom',this)">Custom</button>
+        </div>
+      </div>
+      <div class="custom-date-range" id="customDateRange" style="display:none">
+        <input type="date" id="customFrom" onchange="applyCustomRange()" />
+        <span>to</span>
+        <input type="date" id="customTo" onchange="applyCustomRange()" />
+      </div>
+      <div class="filter-group">
+        <label>Type</label>
+        <select class="filter-select" id="txnTypeFilter" onchange="renderTransactions()">
+          <option value="all">All</option>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+          <option value="transfer">Transfer</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <select class="filter-select" id="txnCatFilter" onchange="renderTransactions()">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+      <div class="filter-group search-group">
+        <input type="text" class="search-input" id="txnSearch" placeholder="🔍  Search notes..." oninput="renderTransactions()" />
+      </div>
+    </div>
+
+    <div class="txn-summary-bar" id="txnSummaryBar"></div>
+    <div class="txn-full-list" id="txnFullList"></div>
+  </section>
+
+  <!-- ANALYSIS PAGE -->
+  <section class="page" id="page-analysis">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Analysis</h1>
+        <p class="page-sub">Understand your spending patterns</p>
+      </div>
+      <div class="header-actions">
+        <div class="period-tabs" id="analysisPeriodTabs">
+          <button class="ptab active" onclick="setAnalysisPeriod('week',this)">Week</button>
+          <button class="ptab" onclick="setAnalysisPeriod('month',this)">Month</button>
+          <button class="ptab" onclick="setAnalysisPeriod('year',this)">Year</button>
+          <button class="ptab" onclick="setAnalysisPeriod('custom',this)">Custom</button>
+        </div>
+      </div>
+    </div>
+    <div class="custom-date-range" id="analysisCustomDate" style="display:none;margin-bottom:1rem">
+      <input type="date" id="analysisFrom" onchange="renderAnalysis()" />
+      <span>to</span>
+      <input type="date" id="analysisTo" onchange="renderAnalysis()" />
+    </div>
+    <div class="analysis-nav" id="analysisNav"></div>
+
+    <div class="cards-grid" id="analysisCards"></div>
+
+    <div class="two-col">
+      <div class="section-block">
+        <div class="section-header"><h2 class="section-title">Spending Trend</h2></div>
+        <div class="chart-wrap"><canvas id="analysisTrendChart"></canvas></div>
+      </div>
+      <div class="section-block">
+        <div class="section-header"><h2 class="section-title">Category Breakdown</h2></div>
+        <div class="chart-wrap"><canvas id="analysisCatChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><h2 class="section-title">Category Details</h2></div>
+      <div class="cat-breakdown-list" id="catBreakdownList"></div>
+    </div>
+  </section>
+
+  <!-- BUDGETS PAGE -->
+  <section class="page" id="page-budgets">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Budgets</h1>
+        <p class="page-sub">Set monthly spending limits</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-primary" onclick="openBudgetModal()">+ Add Budget</button>
+      </div>
+    </div>
+    <div class="budget-list" id="budgetList"></div>
+  </section>
+
+  <!-- ACCOUNTS PAGE -->
+  <section class="page" id="page-accounts">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Accounts</h1>
+        <p class="page-sub">Manage your accounts</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-primary" onclick="openAccountModal()">+ Add Account</button>
+      </div>
+    </div>
+    <div class="accounts-grid" id="accountsList"></div>
+  </section>
+
+  <!-- SETTINGS PAGE -->
+  <section class="page" id="page-settings">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Settings</h1>
+        <p class="page-sub">Customize your experience</p>
+      </div>
+    </div>
+    <div class="settings-grid">
+      <div class="section-block">
+        <div class="section-header"><h2 class="section-title">Profile</h2></div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="settingName" class="form-input" placeholder="Enter your name" />
+          </div>
+          <div class="form-group">
+            <label>Currency Symbol</label>
+            <select class="form-input" id="settingCurrency">
+              <option value="₹">₹ Indian Rupee</option>
+              <option value="$">$ US Dollar</option>
+              <option value="€">€ Euro</option>
+              <option value="£">£ British Pound</option>
+              <option value="¥">¥ Japanese Yen</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="section-header"><h2 class="section-title">Data Management</h2></div>
+        <div class="settings-actions">
+          <button class="btn-secondary" onclick="exportData()">📤 Export All Data (JSON)</button>
+          <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📥 Import Data (JSON)</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+          <button class="btn-danger" onclick="clearAllData()">🗑 Clear All Data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== ADD TRANSACTION MODAL ===== -->
+<div class="modal-overlay" id="addModalOverlay" onclick="closeAddModal(event)">
+  <div class="modal" id="addModal">
+    <div class="modal-header">
+      <h2 id="addModalTitle">Add Transaction</h2>
+      <button class="modal-close" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="type-selector">
+      <button class="type-btn active" id="typeExpense" onclick="setType('expense')">Expense</button>
+      <button class="type-btn" id="typeIncome" onclick="setType('income')">Income</button>
+      <button class="type-btn" id="typeTransfer" onclick="setType('transfer')">Transfer</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Amount <span class="cur-sym" id="modalCurSym">₹</span></label>
+        <input type="number" id="txnAmount" class="form-input" placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="form-group" id="catGroup">
+        <label>Category</label>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+      <div class="form-group">
+        <label>Account</label>
+        <select class="form-input" id="txnAccount"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="txnDate" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="time" id="txnTime" class="form-input" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <input type="text" id="txnNotes" class="form-input" placeholder="Optional note..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BUDGET MODAL ===== -->
+<div class="modal-overlay" id="budgetModalOverlay" onclick="closeBudgetModal(event)">
+  <div class="modal" id="budgetModal">
+    <div class="modal-header">
+      <h2>Add Budget</h2>
+      <button class="modal-close" onclick="closeBudgetModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Category</label>
+        <select class="form-input" id="budgetCat"></select>
+      </div>
+      <div class="form-group">
+        <label>Monthly Limit <span class="cur-sym" id="budgetCurSym">₹</span></label>
+        <input type="number" id="budgetAmount" class="form-input" placeholder="0.00" min="0" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeBudgetModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveBudget()">Save Budget</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ACCOUNT MODAL ===== -->
+<div class="modal-overlay" id="accountModalOverlay" onclick="closeAccountModal(event)">
+  <div class="modal" id="accountModal">
+    <div class="modal-header">
+      <h2>Add Account</h2>
+      <button class="modal-close" onclick="closeAccountModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Account Name</label>
+        <input type="text" id="accountName" class="form-input" placeholder="e.g. SBI, Cash, HDFC..." />
+      </div>
+      <div class="form-group">
+        <label>Account Type</label>
+        <select class="form-input" id="accountType">
+          <option value="bank">🏦 Bank Account</option>
+          <option value="cash">💵 Cash</option>
+          <option value="credit">💳 Credit Card</option>
+          <option value="wallet">👛 Digital Wallet</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Opening Balance <span class="cur-sym" id="acctCurSym">₹</span></label>
+        <input type="number" id="accountBalance" class="form-input" placeholder="0.00" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeAccountModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveAccount()">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

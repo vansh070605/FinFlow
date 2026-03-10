@@ -1,6 +1,0 @@
-from application import app, db
-from application.models import IncomeExpenses
-
-# Create the tables in the database
-with app.app_context():
-    db.create_all()
