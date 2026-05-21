@@ -1,415 +1,1125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finsight – Expense Manager</title>
-  <meta name="description" content="A powerful offline expense manager to track your spendings by week, month, year, or custom date range with category insights." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FinFlow – Premium Expense Manager</title>
+  <meta name="description" content="A premium offline personal finance tracker with glassmorphic dashboards, bento insights, and smart cooling vaults." />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f1117" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#10131a" />
+  
+  <!-- Tailwind CSS & plugins -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "var(--color-primary)",
+            "primary-container": "var(--color-primary-container)",
+            "on-primary": "var(--color-on-primary)",
+            "on-primary-container": "var(--color-on-primary-container)",
+            "secondary": "var(--color-secondary)",
+            "secondary-container": "var(--color-secondary-container)",
+            "on-secondary": "var(--color-on-secondary)",
+            "on-secondary-container": "var(--color-on-secondary-container)",
+            "tertiary": "var(--color-tertiary)",
+            "tertiary-container": "var(--color-tertiary-container)",
+            "on-tertiary": "var(--color-on-tertiary)",
+            "on-tertiary-container": "var(--color-on-tertiary-container)",
+            "background": "var(--color-background)",
+            "on-background": "var(--color-on-background)",
+            "surface": "var(--color-surface)",
+            "on-surface": "var(--color-on-surface)",
+            "surface-variant": "var(--color-surface-variant)",
+            "on-surface-variant": "var(--color-on-surface-variant)",
+            "surface-container": "var(--color-surface-container)",
+            "surface-container-low": "var(--color-surface-container-low)",
+            "surface-container-high": "var(--color-surface-container-high)",
+            "surface-container-highest": "var(--color-surface-container-highest)",
+            "surface-container-lowest": "var(--color-surface-container-lowest)",
+            "outline": "var(--color-outline)",
+            "outline-variant": "var(--color-outline-variant)",
+            "error": "var(--color-error)",
+            "on-error": "var(--color-on-error)",
+            "error-container": "var(--color-error-container)",
+            "on-error-container": "var(--color-on-error-container)",
+            
+            // Fixed variables for theme accent styling
+            "tertiary-fixed": "var(--color-tertiary-fixed)",
+            "tertiary-fixed-dim": "var(--color-tertiary-fixed-dim)",
+            "secondary-fixed": "var(--color-secondary-fixed)",
+            "secondary-fixed-dim": "var(--color-secondary-fixed-dim)",
+            "primary-fixed": "var(--color-primary-fixed)",
+            "primary-fixed-dim": "var(--color-primary-fixed-dim)",
+            "on-tertiary-fixed": "var(--color-on-tertiary-fixed)",
+            "on-tertiary-fixed-variant": "var(--color-on-tertiary-fixed-variant)",
+            "on-secondary-fixed": "var(--color-on-secondary-fixed)",
+            "on-secondary-fixed-variant": "var(--color-on-secondary-fixed-variant)",
+            "on-primary-fixed": "var(--color-on-primary-fixed)",
+            "on-primary-fixed-variant": "var(--color-on-primary-fixed-variant)",
+            "surface-dim": "var(--color-surface-dim)",
+            "surface-bright": "var(--color-surface-bright)",
+            "inverse-surface": "var(--color-inverse-surface)",
+            "inverse-on-surface": "var(--color-inverse-on-surface)",
+            "inverse-primary": "var(--color-inverse-primary)",
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "touch-target-min": "44px",
+            "stack-sm": "8px",
+            "stack-md": "16px",
+            "stack-lg": "24px",
+            "gutter": "24px",
+            "margin-mobile": "16px",
+            "margin-desktop": "48px",
+            "container-max-width": "1200px",
+            "unit": "4px"
+          },
+          fontFamily: {
+            "headline": ["Plus Jakarta Sans"],
+            "body": ["Plus Jakarta Sans"]
+          }
+        }
+      }
+    }
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="bg-background dark:bg-surface-container-lowest text-on-surface min-h-screen pb-safe">
 
-<!-- ===== SIDEBAR NAV ===== -->
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <span class="logo-icon">💎</span>
-    <span class="logo-text">Finsight</span>
+  <!-- ===== AUTH OVERLAY SCREEN ===== -->
+  <div id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-background/90 dark:bg-surface-container-lowest/90 backdrop-blur-md transition-all duration-300 px-4 pointer-events-auto">
+    <div class="glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-6 border border-outline-variant/15 dark:border-white/10 space-y-6 animate-fadeIn">
+      
+      <!-- Firebase Warning Alert -->
+      <div id="firebase-warning" class="hidden bg-error-container/20 border border-error/20 p-4 rounded-2xl flex items-start gap-3 text-xs text-error">
+        <span class="material-symbols-outlined text-[20px] shrink-0 mt-0.5">warning</span>
+        <div>
+          <span class="font-bold">Firebase Not Configured:</span> The firebase app settings are missing or default in <code>firebase-config.js</code>. You can click <b>Continue as Guest</b> to use the app in offline mode.
+        </div>
+      </div>
+
+      <!-- App Logo / Title -->
+      <div class="text-center space-y-2">
+        <div class="inline-flex w-12 h-12 rounded-2xl bg-primary-container/20 items-center justify-center border border-primary/20 shadow-md">
+          <span class="material-symbols-outlined text-primary text-3xl">account_balance_wallet</span>
+        </div>
+        <h2 class="font-headline font-extrabold text-3xl text-primary tracking-tight" id="authAppTitle">FinFlow</h2>
+        <p class="font-body text-xs text-on-surface-variant">Sign in or create an account to start syncing your expenses.</p>
+      </div>
+
+      <!-- Tab Selectors -->
+      <div class="flex bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/5 rounded-2xl p-1 gap-1">
+        <button id="auth-tab-login" type="button" onclick="setAuthTab('login')" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all bg-white dark:bg-slate-900 shadow-sm text-primary dark:text-secondary-container">
+          Sign In
+        </button>
+        <button id="auth-tab-signup" type="button" onclick="setAuthTab('signup')" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all text-on-surface-variant">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <!-- Name Field -->
+        <div id="auth-name-group" class="flex flex-col gap-1.5 hidden">
+          <label class="text-xs font-bold text-on-surface-variant">Your Name</label>
+          <input type="text" id="auth-name" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="John Doe" />
+        </div>
+
+        <!-- Email Field -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Email Address</label>
+          <input type="email" id="auth-email" required class="bg-surface-container-low border border-outline-variant/15 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="yourname@example.com" />
+        </div>
+
+        <!-- Password Field -->
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Password</label>
+          <input type="password" id="auth-password" required minlength="6" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/5 rounded-xl px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="••••••••" />
+        </div>
+
+        <!-- Action Button -->
+        <button type="submit" id="auth-submit-btn" class="w-full bg-primary text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary-container active:scale-98 transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+          <span id="auth-btn-text">Sign In</span>
+          <span class="material-symbols-outlined text-[18px]" id="auth-btn-icon">login</span>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative flex py-2 items-center">
+        <div class="flex-grow border-t border-outline-variant/20 dark:border-white/5"></div>
+        <span class="flex-shrink mx-4 text-[10px] text-on-surface-variant uppercase font-bold tracking-wider">or</span>
+        <div class="flex-grow border-t border-outline-variant/20 dark:border-white/5"></div>
+      </div>
+
+      <button type="button" onclick="useAsGuest()" class="w-full bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-on-surface py-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">person_off</span>
+        <span>Continue as Guest</span>
+      </button>
+
+    </div>
   </div>
-  <ul class="nav-links">
-    <li><a href="#" class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)">
-      <span class="nav-icon">🏠</span><span>Dashboard</span></a></li>
-    <li><a href="#" class="nav-item" data-page="transactions" onclick="showPage('transactions',this)">
-      <span class="nav-icon">📋</span><span>Transactions</span></a></li>
-    <li><a href="#" class="nav-item" data-page="analysis" onclick="showPage('analysis',this)">
-      <span class="nav-icon">📊</span><span>Analysis</span></a></li>
-    <li><a href="#" class="nav-item" data-page="budgets" onclick="showPage('budgets',this)">
-      <span class="nav-icon">🎯</span><span>Budgets</span></a></li>
-    <li><a href="#" class="nav-item" data-page="accounts" onclick="showPage('accounts',this)">
-      <span class="nav-icon">🏦</span><span>Accounts</span></a></li>
-    <li><a href="#" class="nav-item" data-page="settings" onclick="showPage('settings',this)">
-      <span class="nav-icon">⚙️</span><span>Settings</span></a></li>
-  </ul>
-  <div class="sidebar-footer">
-    <div class="user-chip">
-      <div class="user-avatar" id="sidebarAvatar">V</div>
-      <div>
-        <div class="user-name" id="sidebarName">User</div>
-        <div class="user-sub">Personal Finance</div>
+
+  <!-- ===== TOP APP BAR (Mobile Only) ===== -->
+  <header class="fixed top-0 left-0 w-full z-40 bg-surface/80 dark:bg-surface-container-lowest/85 backdrop-blur-xl border-b border-outline-variant/20 dark:border-white/10 flex lg:hidden justify-between items-center px-margin-mobile h-16 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full overflow-hidden border border-primary/20">
+        <img alt="User Profile" class="w-full h-full object-cover" id="topbarAvatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJh8Hi834LtDvGmUYg7fSKPUSflwvt7n20I875LXq4_NfsXg37_a2kiox5SqkD0a_G7DNyDb7b2QpFokls1qeNF4rm6m5Pi17dntY6O1b8FUQHrJ4OvrhwndOu3F8gaTXMGqXOk1yofiqOuxAeYl6SJcplytWec3EO7H6_EsbfZ7rCQwRIb5L56UA2BJ5MS7ocP452cbN1fmQ65dUeyfBWX0ONI4beBfIc0Ut_qTjeppEH5-xht-zQVMVvFQ_vhztiz6eJwp5-yN7L"/>
       </div>
+      <h1 class="font-headline font-extrabold text-2xl text-primary tracking-tight">FinFlow</h1>
     </div>
-  </div>
-</nav>
+    <div class="flex items-center gap-3">
+      <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors active:scale-95 transition-transform duration-200">
+        <span class="material-symbols-outlined text-on-surface" id="theme-toggle-icon-mobile">dark_mode</span>
+      </button>
+      <button onclick="showPage('settings')" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors active:scale-95 transition-transform duration-200">
+        <span class="material-symbols-outlined text-on-surface">settings</span>
+      </button>
+    </div>
+  </header>
 
-<!-- ===== MOBILE BOTTOM NAV ===== -->
-<nav class="bottom-nav" id="bottomNav">
-  <a href="#" class="bn-item active" data-page="dashboard" onclick="showPage('dashboard',this)">
-    <span>🏠</span><span>Home</span></a>
-  <a href="#" class="bn-item" data-page="transactions" onclick="showPage('transactions',this)">
-    <span>📋</span><span>Txns</span></a>
-  <a href="#" class="bn-item fab-center" id="fabBtn" onclick="openAddModal()">
-    <span class="fab-plus">+</span></a>
-  <a href="#" class="bn-item" data-page="analysis" onclick="showPage('analysis',this)">
-    <span>📊</span><span>Analysis</span></a>
-  <a href="#" class="bn-item" data-page="settings" onclick="showPage('settings',this)">
-    <span>⚙️</span><span>More</span></a>
-</nav>
-
-<!-- ===== FLOATING ADD BUTTON (desktop) ===== -->
-<button class="fab-desktop" onclick="openAddModal()" title="Add Transaction">+</button>
-
-<!-- ===== MAIN CONTENT ===== -->
-<main class="main-content" id="mainContent">
-
-  <!-- DASHBOARD PAGE -->
-  <section class="page active" id="page-dashboard">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-sub" id="dashGreeting">Good morning 👋</p>
+  <!-- ===== SIDEBAR NAVIGATION (Desktop Only) ===== -->
+  <aside class="fixed top-0 left-0 h-screen w-64 z-50 bg-surface-container-low/70 dark:bg-surface-container-lowest/70 backdrop-blur-xl border-r border-outline-variant/20 dark:border-white/10 hidden lg:flex flex-col p-6 transition-all duration-300" id="sidebar">
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center border border-primary/20 shadow-md">
+        <span class="material-symbols-outlined text-primary text-2xl">account_balance_wallet</span>
       </div>
-      <div class="header-actions">
-        <div class="period-tabs" id="dashPeriodTabs">
-          <button class="ptab active" onclick="setDashPeriod('week',this)">Week</button>
-          <button class="ptab" onclick="setDashPeriod('month',this)">Month</button>
-          <button class="ptab" onclick="setDashPeriod('year',this)">Year</button>
+      <span class="font-headline font-extrabold text-2xl text-primary tracking-tight">FinFlow</span>
+    </div>
+    
+    <nav class="flex-1 space-y-2">
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="dashboard" onclick="showPage('dashboard', this)">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="transactions" onclick="showPage('transactions', this)">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span>Transactions</span>
+      </a>
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="analysis" onclick="showPage('analysis', this)">
+        <span class="material-symbols-outlined">pie_chart</span>
+        <span>Analysis</span>
+      </a>
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="smartsave" onclick="showPage('smartsave', this)">
+        <span class="material-symbols-outlined">psychology</span>
+        <span>Smart Save</span>
+      </a>
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="budgets" onclick="showPage('budgets', this)">
+        <span class="material-symbols-outlined">crisis_indicator</span>
+        <span>Budgets</span>
+      </a>
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="accounts" onclick="showPage('accounts', this)">
+        <span class="material-symbols-outlined">account_balance_wallet</span>
+        <span>Accounts</span>
+      </a>
+      <a href="#" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl font-body font-semibold text-on-surface-variant hover:bg-primary/10 transition-all" data-page="settings" onclick="showPage('settings', this)">
+        <span class="material-symbols-outlined">settings</span>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="mt-auto border-t border-outline-variant/20 dark:border-white/10 pt-4">
+      <div class="flex items-center gap-3 bg-black/5 dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/5">
+        <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-extrabold flex items-center justify-center shadow-lg border border-primary/20" id="sidebarAvatar">V</div>
+        <div class="overflow-hidden">
+          <div class="font-body font-bold text-sm text-on-surface truncate" id="sidebarName">Vansh</div>
+          <div class="font-body text-xs text-on-surface-variant truncate">Premium Wallet</div>
         </div>
       </div>
     </div>
+  </aside>
 
-    <!-- Summary Cards -->
-    <div class="cards-grid">
-      <div class="card card-expense glow-red">
-        <div class="card-label">Total Spent</div>
-        <div class="card-amount" id="dashSpent">₹0</div>
-        <div class="card-sub" id="dashSpentSub">This week</div>
-      </div>
-      <div class="card card-income glow-green">
-        <div class="card-label">Total Income</div>
-        <div class="card-amount" id="dashIncome">₹0</div>
-        <div class="card-sub" id="dashIncomeSub">This week</div>
-      </div>
-      <div class="card card-balance glow-blue">
-        <div class="card-label">Net Balance</div>
-        <div class="card-amount" id="dashBalance">₹0</div>
-        <div class="card-sub">Income − Expense</div>
-      </div>
-      <div class="card card-txn glow-purple">
-        <div class="card-label">Transactions</div>
-        <div class="card-amount" id="dashTxnCount">0</div>
-        <div class="card-sub" id="dashTxnSub">This week</div>
-      </div>
-    </div>
+  <!-- ===== MOBILE BOTTOM NAVIGATION ===== -->
+  <nav class="fixed bottom-0 left-0 w-full z-40 bg-surface/80 dark:bg-surface-container-lowest/85 backdrop-blur-xl border-t border-outline-variant/20 dark:border-white/10 h-16 flex lg:hidden justify-around items-center px-4 pb-safe shadow-[0_-8px_32px_0_rgba(0,0,0,0.3)] rounded-t-xl" id="bottomNav">
+    <a href="#" class="bn-item flex flex-col items-center justify-center text-on-surface-variant py-1 transition-all" data-page="dashboard" onclick="showPage('dashboard', this)">
+      <span class="material-symbols-outlined text-[24px]">dashboard</span>
+      <span class="text-[10px] font-bold font-body mt-0.5">Home</span>
+    </a>
+    <a href="#" class="bn-item flex flex-col items-center justify-center text-on-surface-variant py-1 transition-all" data-page="transactions" onclick="showPage('transactions', this)">
+      <span class="material-symbols-outlined text-[24px]">receipt_long</span>
+      <span class="text-[10px] font-bold font-body mt-0.5">History</span>
+    </a>
+    
+    <!-- Central Action Floating Button -->
+    <button class="flex items-center justify-center w-12 h-12 bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary rounded-2xl shadow-lg -translate-y-4 hover:scale-105 active:scale-95 transition-all duration-200 border border-primary/20" onclick="openAddModal()">
+      <span class="material-symbols-outlined text-[28px]">add</span>
+    </button>
+    
+    <a href="#" class="bn-item flex flex-col items-center justify-center text-on-surface-variant py-1 transition-all" data-page="smartsave" onclick="showPage('smartsave', this)">
+      <span class="material-symbols-outlined text-[24px]">psychology</span>
+      <span class="text-[10px] font-bold font-body mt-0.5">Smart</span>
+    </a>
+    <a href="#" class="bn-item flex flex-col items-center justify-center text-on-surface-variant py-1 transition-all" data-page="analysis" onclick="showPage('analysis', this)">
+      <span class="material-symbols-outlined text-[24px]">pie_chart</span>
+      <span class="text-[10px] font-bold font-body mt-0.5">Analysis</span>
+    </a>
+  </nav>
 
-    <!-- Spending Overview Chart -->
-    <div class="section-block">
-      <div class="section-header">
-        <h2 class="section-title">Spending Overview</h2>
-        <span class="section-badge" id="dashChartLabel">Last 7 days</span>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="overviewChart"></canvas>
-      </div>
-    </div>
+  <!-- ===== DESKTOP FLOATING ADD BUTTON ===== -->
+  <button class="fixed bottom-6 right-6 z-40 hidden lg:flex items-center justify-center w-14 h-14 bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary hover:scale-105 active:scale-95 transition-all rounded-2xl shadow-xl border border-primary/20" onclick="openAddModal()" title="Add Transaction">
+    <span class="material-symbols-outlined text-2xl font-bold">add</span>
+  </button>
 
-    <!-- Category Breakdown -->
-    <div class="two-col">
-      <div class="section-block">
-        <div class="section-header">
-          <h2 class="section-title">By Category</h2>
+  <!-- ===== MAIN CONTENT CONTAINER ===== -->
+  <main class="lg:ml-64 pt-24 lg:pt-8 px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto pb-24 lg:pb-12" id="mainContent">
+
+    <!-- ==================== DASHBOARD PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-dashboard">
+      <!-- Greeting and Theme Toggle (Desktop Only) -->
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-headline font-extrabold text-3xl text-on-surface" id="dashGreeting">Good morning 👋</h2>
+          <p class="font-body text-on-surface-variant text-sm">Here is your financial status overview.</p>
         </div>
-        <div class="chart-wrap small">
-          <canvas id="categoryChart"></canvas>
-        </div>
-      </div>
-      <div class="section-block">
-        <div class="section-header">
-          <h2 class="section-title">Recent Transactions</h2>
-          <a href="#" class="see-all" onclick="showPage('transactions',null)">See all →</a>
-        </div>
-        <div class="txn-list" id="dashRecentList"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TRANSACTIONS PAGE -->
-  <section class="page" id="page-transactions">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Transactions</h1>
-        <p class="page-sub" id="txnCount">0 records</p>
-      </div>
-      <div class="header-actions">
-        <button class="btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label>Period</label>
-        <div class="period-tabs" id="txnPeriodTabs">
-          <button class="ptab active" onclick="setTxnPeriod('all',this)">All</button>
-          <button class="ptab" onclick="setTxnPeriod('week',this)">Week</button>
-          <button class="ptab" onclick="setTxnPeriod('month',this)">Month</button>
-          <button class="ptab" onclick="setTxnPeriod('year',this)">Year</button>
-          <button class="ptab" onclick="setTxnPeriod('custom',this)">Custom</button>
-        </div>
-      </div>
-      <div class="custom-date-range" id="customDateRange" style="display:none">
-        <input type="date" id="customFrom" onchange="applyCustomRange()" />
-        <span>to</span>
-        <input type="date" id="customTo" onchange="applyCustomRange()" />
-      </div>
-      <div class="filter-group">
-        <label>Type</label>
-        <select class="filter-select" id="txnTypeFilter" onchange="renderTransactions()">
-          <option value="all">All</option>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-          <option value="transfer">Transfer</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Category</label>
-        <select class="filter-select" id="txnCatFilter" onchange="renderTransactions()">
-          <option value="all">All Categories</option>
-        </select>
-      </div>
-      <div class="filter-group search-group">
-        <input type="text" class="search-input" id="txnSearch" placeholder="🔍  Search notes..." oninput="renderTransactions()" />
-      </div>
-    </div>
-
-    <div class="txn-summary-bar" id="txnSummaryBar"></div>
-    <div class="txn-full-list" id="txnFullList"></div>
-  </section>
-
-  <!-- ANALYSIS PAGE -->
-  <section class="page" id="page-analysis">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Analysis</h1>
-        <p class="page-sub">Understand your spending patterns</p>
-      </div>
-      <div class="header-actions">
-        <div class="period-tabs" id="analysisPeriodTabs">
-          <button class="ptab active" onclick="setAnalysisPeriod('week',this)">Week</button>
-          <button class="ptab" onclick="setAnalysisPeriod('month',this)">Month</button>
-          <button class="ptab" onclick="setAnalysisPeriod('year',this)">Year</button>
-          <button class="ptab" onclick="setAnalysisPeriod('custom',this)">Custom</button>
-        </div>
-      </div>
-    </div>
-    <div class="custom-date-range" id="analysisCustomDate" style="display:none;margin-bottom:1rem">
-      <input type="date" id="analysisFrom" onchange="renderAnalysis()" />
-      <span>to</span>
-      <input type="date" id="analysisTo" onchange="renderAnalysis()" />
-    </div>
-    <div class="analysis-nav" id="analysisNav"></div>
-
-    <div class="cards-grid" id="analysisCards"></div>
-
-    <div class="two-col">
-      <div class="section-block">
-        <div class="section-header"><h2 class="section-title">Spending Trend</h2></div>
-        <div class="chart-wrap"><canvas id="analysisTrendChart"></canvas></div>
-      </div>
-      <div class="section-block">
-        <div class="section-header"><h2 class="section-title">Category Breakdown</h2></div>
-        <div class="chart-wrap"><canvas id="analysisCatChart"></canvas></div>
-      </div>
-    </div>
-
-    <div class="section-block">
-      <div class="section-header"><h2 class="section-title">Category Details</h2></div>
-      <div class="cat-breakdown-list" id="catBreakdownList"></div>
-    </div>
-  </section>
-
-  <!-- BUDGETS PAGE -->
-  <section class="page" id="page-budgets">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Budgets</h1>
-        <p class="page-sub">Set monthly spending limits</p>
-      </div>
-      <div class="header-actions">
-        <button class="btn-primary" onclick="openBudgetModal()">+ Add Budget</button>
-      </div>
-    </div>
-    <div class="budget-list" id="budgetList"></div>
-  </section>
-
-  <!-- ACCOUNTS PAGE -->
-  <section class="page" id="page-accounts">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Accounts</h1>
-        <p class="page-sub">Manage your accounts</p>
-      </div>
-      <div class="header-actions">
-        <button class="btn-primary" onclick="openAccountModal()">+ Add Account</button>
-      </div>
-    </div>
-    <div class="accounts-grid" id="accountsList"></div>
-  </section>
-
-  <!-- SETTINGS PAGE -->
-  <section class="page" id="page-settings">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Settings</h1>
-        <p class="page-sub">Customize your experience</p>
-      </div>
-    </div>
-    <div class="settings-grid">
-      <div class="section-block">
-        <div class="section-header"><h2 class="section-title">Profile</h2></div>
-        <div class="settings-form">
-          <div class="form-group">
-            <label>Your Name</label>
-            <input type="text" id="settingName" class="form-input" placeholder="Enter your name" />
+        <div class="hidden lg:flex items-center gap-4">
+          <div class="flex bg-black/5 dark:bg-white/5 rounded-full p-1 gap-1 border border-black/10 dark:border-white/10">
+            <button class="ptab active px-6 py-2 rounded-full text-xs font-bold transition-all" onclick="setDashPeriod('week',this)">Week</button>
+            <button class="ptab px-6 py-2 rounded-full text-xs font-bold transition-all" onclick="setDashPeriod('month',this)">Month</button>
+            <button class="ptab px-6 py-2 rounded-full text-xs font-bold transition-all" onclick="setDashPeriod('year',this)">Year</button>
           </div>
-          <div class="form-group">
-            <label>Currency Symbol</label>
-            <select class="form-input" id="settingCurrency">
-              <option value="₹">₹ Indian Rupee</option>
-              <option value="$">$ US Dollar</option>
-              <option value="€">€ Euro</option>
-              <option value="£">£ British Pound</option>
-              <option value="¥">¥ Japanese Yen</option>
+          <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-all active:scale-95">
+            <span class="material-symbols-outlined text-on-surface" id="theme-toggle-icon-desktop">dark_mode</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Period selector for mobile -->
+      <div class="flex lg:hidden justify-center bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full p-1 gap-1">
+        <button class="ptab active w-full py-2 rounded-full text-xs font-bold text-center" onclick="setDashPeriod('week',this)">Week</button>
+        <button class="ptab w-full py-2 rounded-full text-xs font-bold text-center" onclick="setDashPeriod('month',this)">Month</button>
+        <button class="ptab w-full py-2 rounded-full text-xs font-bold text-center" onclick="setDashPeriod('year',this)">Year</button>
+      </div>
+
+      <!-- Onboarding Welcome Banner -->
+      <div id="onboarding-banner" class="hidden glass p-6 rounded-3xl border border-primary/20 relative overflow-hidden group shadow-xl transition-all duration-300">
+        <!-- Neon gradient background -->
+        <div class="absolute -left-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:scale-110 transition-all duration-500"></div>
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl group-hover:scale-110 transition-all duration-500"></div>
+        
+        <div class="relative z-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+          <div class="space-y-3 w-full">
+            <h3 class="font-headline font-extrabold text-xl text-primary dark:text-secondary-container flex items-center gap-2">
+              <span class="material-symbols-outlined text-[24px]">rocket_launch</span>
+              <span>Welcome to FinFlow, <span id="onboarding-username">User</span>!</span>
+            </h3>
+            <p class="font-body text-xs text-on-surface-variant max-w-xl leading-relaxed">
+              We've created a premium financial cockpit for you. Here are three quick ways to start taking control of your financial destiny:
+            </p>
+            <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <li class="flex items-start gap-2 bg-black/5 dark:bg-white/5 border border-outline-variant/10 dark:border-white/5 p-3 rounded-2xl">
+                <span class="material-symbols-outlined text-primary text-[20px] mt-0.5">add_circle</span>
+                <div>
+                  <h4 class="font-headline text-xs font-bold text-on-surface">1. Log Transactions</h4>
+                  <p class="text-[10px] text-on-surface-variant/80 mt-1">Tap <b>+ Add Expense</b> or <b>+ Add Income</b> to start tracking cash flow.</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-2 bg-black/5 dark:bg-white/5 border border-outline-variant/10 dark:border-white/5 p-3 rounded-2xl">
+                <span class="material-symbols-outlined text-secondary text-[20px] mt-0.5">query_stats</span>
+                <div>
+                  <h4 class="font-headline text-xs font-bold text-on-surface">2. Limit Spending</h4>
+                  <p class="text-[10px] text-on-surface-variant/80 mt-1">Go to <b>Budgets</b> and allocate limits for categories like Food or Travel.</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-2 bg-black/5 dark:bg-white/5 border border-outline-variant/10 dark:border-white/5 p-3 rounded-2xl">
+                <span class="material-symbols-outlined text-tertiary text-[20px] mt-0.5">psychology</span>
+                <div>
+                  <h4 class="font-headline text-xs font-bold text-on-surface">3. Resist Urges</h4>
+                  <p class="text-[10px] text-on-surface-variant/80 mt-1">Visit <b>Smart Save</b> to lock impulse buys in a cooling vault.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="flex flex-row xl:flex-col gap-3 w-full xl:w-auto shrink-0">
+            <button onclick="dismissOnboarding()" class="w-full xl:w-36 bg-primary text-white hover:bg-primary-container dark:bg-primary-container dark:text-on-primary-container py-3 px-4 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all text-center">
+              Let's Go! 🚀
+            </button>
+            <button onclick="startInteractiveTour()" class="w-full xl:w-36 bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 text-on-surface py-3 px-4 rounded-xl text-xs font-bold active:scale-95 transition-all text-center">
+              Take a Tour
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Overview (Asymmetric Bento Style) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Double Card: Total Spent / Balance -->
+        <div class="col-span-2 glass rounded-2xl p-6 relative overflow-hidden group">
+          <!-- Neon glow effect -->
+          <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-tertiary/10 rounded-full blur-3xl group-hover:bg-tertiary/20 transition-all duration-500"></div>
+          <p class="text-label-sm font-semibold uppercase text-on-surface-variant tracking-wider mb-1">Net Balance</p>
+          <h2 class="text-3xl md:text-4xl font-headline font-extrabold text-on-surface transition-all duration-300" id="dashBalance">₹0</h2>
+          <div class="mt-4 flex items-center gap-2 text-tertiary text-xs font-bold">
+            <span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+            <span>Available funds across all accounts</span>
+          </div>
+        </div>
+
+        <!-- Total Spent Bento -->
+        <div class="glass rounded-2xl p-6 flex flex-col justify-between group">
+          <div class="w-10 h-10 rounded-xl bg-error-container/20 border border-error/15 flex items-center justify-center text-error group-hover:scale-105 transition-transform duration-300">
+            <span class="material-symbols-outlined">trending_up</span>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Spent</p>
+            <p class="text-xl font-bold font-headline text-on-surface" id="dashSpent">₹0</p>
+            <p class="text-[10px] text-on-surface-variant/70 mt-1" id="dashSpentSub">This week</p>
+          </div>
+        </div>
+
+        <!-- Total Income Bento -->
+        <div class="glass rounded-2xl p-6 flex flex-col justify-between group">
+          <div class="w-10 h-10 rounded-xl bg-tertiary-container/20 border border-tertiary/15 flex items-center justify-center text-tertiary group-hover:scale-105 transition-transform duration-300">
+            <span class="material-symbols-outlined">trending_down</span>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Income</p>
+            <p class="text-xl font-bold font-headline text-on-surface" id="dashIncome">₹0</p>
+            <p class="text-[10px] text-on-surface-variant/70 mt-1" id="dashIncomeSub">This week</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Grid -->
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="openAddModal('expense')" class="flex items-center justify-center gap-2 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 text-on-surface py-3.5 px-4 rounded-xl text-sm font-semibold shadow-md active:scale-98 transition-all">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          <span>Add Expense</span>
+        </button>
+        <button onclick="openAddModal('income')" class="flex items-center justify-center gap-2 bg-tertiary-container hover:bg-tertiary-container/90 text-on-tertiary-container py-3.5 px-4 rounded-xl text-sm font-semibold shadow-md active:scale-98 transition-all">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          <span>Add Income</span>
+        </button>
+      </div>
+
+      <!-- Spending Chart Section -->
+      <div class="glass rounded-2xl p-5 shadow-md space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-headline text-lg font-bold text-on-surface">Spending Overview</h3>
+          <span class="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-primary text-[10px] font-bold px-3 py-1 rounded-full" id="dashChartLabel">Last 7 days</span>
+        </div>
+        <div class="h-64 chart-wrap">
+          <canvas id="overviewChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Category Breakdown and Recent Transactions side-by-side -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Category Chart -->
+        <div class="glass rounded-2xl p-5 shadow-md flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-headline text-lg font-bold text-on-surface">By Category</h3>
+          </div>
+          <div class="h-60 chart-wrap flex items-center justify-center">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="glass rounded-2xl p-5 shadow-md flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-headline text-lg font-bold text-on-surface">Recent Activity</h3>
+            <button onclick="showPage('transactions')" class="text-xs text-primary font-bold hover:underline">See all →</button>
+          </div>
+          <div class="space-y-3" id="dashRecentList">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento-style Credit Card Insight Banner -->
+      <div class="relative h-48 rounded-2xl overflow-hidden shadow-xl group border border-white/10">
+        <img alt="Luxury titanium credit card" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc8h_fSR_P5teWXsWo2l2yEf6eB0CbAYpzaf6u_ck8nf24O7GqRTK9FUr3jidtZY_z6kWRmvmPJrAlEA05VMaqoXwjDc1YEc40_V7Zzr-iYkAGywojwsE5ZAW3HY9QyHAvNGueA8qz2Co5X5PwphF-wYQcjzYFFtxMN5Y93U1ji90C8zgm9gj2OQ0eonENhL1a4RROwtOYBzYYqG0UZ3um7Zg30CPVCdM4gXhweAaMkRXARoYGmD6DwCOh1P-KPxJXUMnbBCvX8mI"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 flex flex-col justify-end">
+          <span class="text-[9px] text-[#00e475] uppercase tracking-widest mb-1 font-bold">Vivid Insight</span>
+          <h4 class="font-headline text-lg font-extrabold text-white leading-tight">Time is Money Mode</h4>
+          <p class="font-body text-xs text-white/70 mt-1 max-w-md">Activate in settings to visualize currency amounts converted to working life hours.</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==================== TRANSACTIONS PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-transactions">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-headline font-extrabold text-3xl text-on-surface">Transactions</h2>
+          <p class="font-body text-on-surface-variant text-sm" id="txnCount">0 records</p>
+        </div>
+        <button onclick="exportCSV()" class="flex items-center gap-2 bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          <span>Export CSV</span>
+        </button>
+      </div>
+
+      <!-- Filters Panel (Glass Card) -->
+      <div class="glass rounded-2xl p-5 space-y-4">
+        <!-- Period Filter Tabs -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-on-surface-variant mr-2">Period:</span>
+          <div class="flex bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 rounded-full p-1 gap-1" id="txnPeriodTabs">
+            <button class="ptab active px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setTxnPeriod('all',this)">All</button>
+            <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setTxnPeriod('week',this)">Week</button>
+            <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setTxnPeriod('month',this)">Month</button>
+            <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setTxnPeriod('year',this)">Year</button>
+            <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setTxnPeriod('custom',this)">Custom</button>
+          </div>
+        </div>
+
+        <!-- Custom Date Range Inputs -->
+        <div class="flex items-center gap-3 bg-surface-container-low border border-white/5 p-3 rounded-xl max-w-md hidden" id="customDateRange">
+          <input type="date" id="customFrom" onchange="applyCustomRange()" class="bg-transparent border-0 text-xs text-on-surface focus:ring-0 p-0" />
+          <span class="text-xs text-on-surface-variant">to</span>
+          <input type="date" id="customTo" onchange="applyCustomRange()" class="bg-transparent border-0 text-xs text-on-surface focus:ring-0 p-0" />
+        </div>
+
+        <!-- Filters Select & Search -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Type</label>
+            <select class="bg-surface-container-low border border-white/5 rounded-xl px-3 py-2.5 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:border-primary" id="txnTypeFilter" onchange="renderTransactions()">
+              <option value="all">All Types</option>
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+              <option value="transfer">Transfer</option>
             </select>
           </div>
-          <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
-        </div>
-      </div>
-      <div class="section-block">
-        <div class="section-header"><h2 class="section-title">Data Management</h2></div>
-        <div class="settings-actions">
-          <button class="btn-secondary" onclick="exportData()">📤 Export All Data (JSON)</button>
-          <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📥 Import Data (JSON)</button>
-          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
-          <button class="btn-danger" onclick="clearAllData()">🗑 Clear All Data</button>
-        </div>
-      </div>
-    </div>
-  </section>
 
-</main>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Category</label>
+            <select class="bg-surface-container-low border border-white/5 rounded-xl px-3 py-2.5 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:border-primary" id="txnCatFilter" onchange="renderTransactions()">
+              <!-- Categories dynamically added -->
+            </select>
+          </div>
 
-<!-- ===== ADD TRANSACTION MODAL ===== -->
-<div class="modal-overlay" id="addModalOverlay" onclick="closeAddModal(event)">
-  <div class="modal" id="addModal">
-    <div class="modal-header">
-      <h2 id="addModalTitle">Add Transaction</h2>
-      <button class="modal-close" onclick="closeAddModal()">✕</button>
-    </div>
-    <div class="type-selector">
-      <button class="type-btn active" id="typeExpense" onclick="setType('expense')">Expense</button>
-      <button class="type-btn" id="typeIncome" onclick="setType('income')">Income</button>
-      <button class="type-btn" id="typeTransfer" onclick="setType('transfer')">Transfer</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Amount <span class="cur-sym" id="modalCurSym">₹</span></label>
-        <input type="number" id="txnAmount" class="form-input" placeholder="0.00" min="0" step="0.01" />
-      </div>
-      <div class="form-group" id="catGroup">
-        <label>Category</label>
-        <div class="cat-grid" id="catGrid"></div>
-      </div>
-      <div class="form-group">
-        <label>Account</label>
-        <select class="form-input" id="txnAccount"></select>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="txnDate" class="form-input" />
-        </div>
-        <div class="form-group">
-          <label>Time</label>
-          <input type="time" id="txnTime" class="form-input" />
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Search Notes</label>
+            <div class="relative">
+              <input type="text" class="w-full bg-surface-container-low border border-white/5 rounded-xl pl-10 pr-3 py-2.5 text-xs text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/40" id="txnSearch" placeholder="Search keywords..." oninput="renderTransactions()" />
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-base text-on-surface-variant">search</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <label>Notes</label>
-        <input type="text" id="txnNotes" class="form-input" placeholder="Optional note..." />
+
+      <!-- Txn summary header -->
+      <div class="glass border border-white/15 px-6 py-4 rounded-2xl flex justify-between items-center" id="txnSummaryBar">
+        <!-- Populated dynamically -->
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveTransaction()">Save</button>
+
+      <!-- Transaction List (Grouped by Date) -->
+      <div class="space-y-4" id="txnFullList">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+
+    <!-- ==================== ANALYSIS PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-analysis">
+      <div class="flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h2 class="font-headline font-extrabold text-3xl text-on-surface">Analysis</h2>
+          <p class="font-body text-on-surface-variant text-sm">Visualize and inspect spend distributions</p>
+        </div>
+        <div class="flex bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 rounded-full p-1 gap-1" id="analysisPeriodTabs">
+          <button class="ptab active px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setAnalysisPeriod('week',this)">Week</button>
+          <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setAnalysisPeriod('month',this)">Month</button>
+          <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setAnalysisPeriod('year',this)">Year</button>
+          <button class="ptab px-4 py-1.5 rounded-full text-xs font-bold transition-all" onclick="setAnalysisPeriod('custom',this)">Custom</button>
+        </div>
+      </div>
+
+      <!-- Custom Date Picker for Analysis -->
+      <div class="flex items-center gap-3 bg-surface-container-low border border-white/5 p-3 rounded-xl max-w-md hidden" id="analysisCustomDate">
+        <input type="date" id="analysisFrom" onchange="renderAnalysis()" class="bg-transparent border-0 text-xs text-on-surface focus:ring-0 p-0" />
+        <span class="text-xs text-on-surface-variant">to</span>
+        <input type="date" id="analysisTo" onchange="renderAnalysis()" class="bg-transparent border-0 text-xs text-on-surface focus:ring-0 p-0" />
+      </div>
+
+      <!-- Offset Navigation controls -->
+      <div class="flex justify-between items-center" id="analysisNav">
+        <!-- Dynamically rendered back/forward buttons -->
+      </div>
+
+      <!-- Analysis Metrics Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="analysisCards">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Spending Trend -->
+        <div class="glass rounded-2xl p-5 shadow-sm border border-white/10">
+          <h3 class="font-headline text-lg font-bold text-on-surface mb-4">Spending Trend</h3>
+          <div class="h-64 chart-wrap">
+            <canvas id="analysisTrendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Chart -->
+        <div class="glass rounded-2xl p-5 shadow-sm border border-white/10 flex flex-col justify-between">
+          <h3 class="font-headline text-lg font-bold text-on-surface mb-4">Category Distribution</h3>
+          <div class="h-64 chart-wrap flex items-center justify-center">
+            <canvas id="analysisCatChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category detailed list -->
+      <div class="glass rounded-2xl p-5 shadow-sm border border-white/10 space-y-4">
+        <h3 class="font-headline text-lg font-bold text-on-surface">Category Details</h3>
+        <div class="space-y-4" id="catBreakdownList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==================== SMART SAVE PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-smartsave">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-headline font-extrabold text-3xl text-on-surface">Smart Save</h2>
+          <p class="font-body text-on-surface-variant text-sm">Resist impulse items and optimize your cash runway</p>
+        </div>
+        <button onclick="openImpulseModal()" class="flex items-center gap-2 bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md border border-primary/20 transition-all">
+          <span class="material-symbols-outlined text-[18px]">psychology</span>
+          <span>+ Log Impulse Urge</span>
+        </button>
+      </div>
+
+      <!-- Stats overview boxes -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Piggy Bank -->
+        <div class="glass p-5 rounded-2xl shadow-sm flex items-center gap-4 border border-white/10 group">
+          <div class="w-12 h-12 bg-tertiary-container/20 border border-tertiary/15 rounded-xl flex items-center justify-center text-tertiary group-hover:scale-105 transition-transform duration-300">
+            <span class="material-symbols-outlined text-2xl">savings</span>
+          </div>
+          <div>
+            <div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Urges Resisted</div>
+            <div class="text-2xl font-bold font-headline text-on-surface" id="vaultSavedCount">0</div>
+            <div class="text-[11px] text-tertiary font-bold mt-0.5" id="vaultSavedAmount">Saved: ₹0</div>
+          </div>
+        </div>
+
+        <!-- Runway Days -->
+        <div class="glass p-5 rounded-2xl shadow-sm flex items-center gap-4 border border-white/10 group">
+          <div class="w-12 h-12 bg-primary-container/20 border border-primary/15 rounded-xl flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-300">
+            <span class="material-symbols-outlined text-2xl">rocket_launch</span>
+          </div>
+          <div>
+            <div class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Financial Runway</div>
+            <div class="text-2xl font-bold font-headline text-on-surface" id="runwayValue">0 days</div>
+            <div class="text-[11px] text-primary font-bold mt-0.5" id="runwaySub">At current burn rate</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Impulse Vault List -->
+        <div class="glass rounded-2xl p-5 shadow-sm border border-white/10 flex flex-col justify-between h-fit space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+              <span>Impulse Cooling Vault</span>
+              <span class="bg-primary-container/10 border border-primary/10 text-primary text-xs px-2.5 py-0.5 rounded-full" id="activeUrgesCount">0 active</span>
+            </h3>
+          </div>
+          
+          <div class="space-y-4 max-h-[500px] overflow-y-auto hide-scrollbar pr-1" id="impulseList">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Runway Simulator widget -->
+        <div class="glass rounded-2xl p-5 shadow-sm border border-white/10 space-y-5 h-fit">
+          <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">show_chart</span>
+            <span>Runway Simulator</span>
+          </h3>
+
+          <div class="space-y-3 bg-white/5 border border-white/5 p-4 rounded-xl">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-on-surface-variant font-semibold">Liquid Cash Balance</span>
+              <span class="font-bold text-on-surface" id="simBalance">₹0</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-on-surface-variant font-semibold">Monthly Burn Rate</span>
+              <span class="font-bold text-on-surface" id="simBurnRate">₹0</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex justify-between items-center text-xs text-on-surface-variant">
+              <span class="font-semibold">Simulate Spending Cut</span>
+              <span class="font-bold text-primary" id="sliderVal">100% (No Cut)</span>
+            </div>
+            <input type="range" id="runwayCutSlider" class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary" min="50" max="100" value="100" step="5" oninput="updateRunwaySimulation()" />
+          </div>
+
+          <!-- Simulator result card -->
+          <div class="bg-primary-container/10 border border-primary-container/20 p-5 rounded-2xl text-center space-y-2">
+            <div class="text-[9px] text-primary uppercase tracking-wider font-bold">New Estimated Runway</div>
+            <div class="text-3xl font-headline font-extrabold text-primary" id="simRunwayResult">0 months</div>
+            <div class="text-xs text-on-surface-variant" id="simRunwayDiff">Keep it up!</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==================== BUDGETS PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-budgets">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-headline font-extrabold text-3xl text-on-surface">Budgets</h2>
+          <p class="font-body text-on-surface-variant text-sm">Set monthly spending limits for categories</p>
+        </div>
+        <button onclick="openBudgetModal()" class="flex items-center gap-2 bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md border border-primary/20 transition-all">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          <span>Set Budget</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="budgetList">
+        <!-- Budgets list populated dynamically -->
+      </div>
+    </section>
+
+
+    <!-- ==================== ACCOUNTS PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-accounts">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="font-headline font-extrabold text-3xl text-on-surface">Accounts</h2>
+          <p class="font-body text-on-surface-variant text-sm">Manage cards, wallets, and cash reserves</p>
+        </div>
+        <button onclick="openAccountModal()" class="flex items-center gap-2 bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md border border-primary/20 transition-all">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          <span>Add Account</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="accountsList">
+        <!-- Accounts cards populated dynamically -->
+      </div>
+    </section>
+
+
+    <!-- ==================== SETTINGS PAGE ==================== -->
+    <section class="page hidden space-y-6 animate-fadeIn" id="page-settings">
+      <div>
+        <h2 class="font-headline font-extrabold text-3xl text-on-surface">Settings</h2>
+        <p class="font-body text-on-surface-variant text-sm">Customize currency and parameters</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Profile Config -->
+        <div class="glass border border-white/10 rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">person</span>
+            <span>Profile Configuration</span>
+          </h3>
+
+          <div class="space-y-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold text-on-surface-variant">Your Name</label>
+              <input type="text" id="settingName" class="bg-surface-container-low border border-white/5 rounded-xl px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="Enter name..." />
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs font-bold text-on-surface-variant">Currency Symbol</label>
+              <select id="settingCurrency" class="bg-surface-container-low border border-white/5 rounded-xl px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+                <option value="₹">₹ Indian Rupee</option>
+                <option value="$">$ US Dollar</option>
+                <option value="€">€ Euro</option>
+                <option value="£">£ British Pound</option>
+                <option value="¥">¥ Japanese Yen</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-outline-variant/15 dark:border-white/10">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-bold text-on-surface-variant">Hourly Wage (<span id="settingsWageCurSym">₹</span>)</label>
+                <input type="number" id="settingWage" class="bg-surface-container-low border border-white/5 rounded-xl px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="e.g. 200" min="0" />
+              </div>
+
+              <div class="flex flex-col justify-between items-start py-1">
+                <span class="text-xs font-bold text-on-surface-variant mb-1">"Time is Money" Mode</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="settingTimeIsMoney" onchange="toggleTimeIsMoney()" class="sr-only peer" />
+                  <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+                </label>
+              </div>
+            </div>
+
+            <button onclick="saveSettings()" class="w-full bg-primary-container text-white py-3 rounded-xl text-sm font-semibold hover:bg-primary border border-primary/20 active:scale-98 transition-all shadow-md">Save Settings</button>
+          </div>
+        </div>
+
+        <!-- Data Configuration -->
+        <div class="glass border border-white/10 rounded-2xl p-6 shadow-sm space-y-4 flex flex-col justify-between">
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">database</span>
+              <span>Data Operations</span>
+            </h3>
+            <p class="font-body text-xs text-on-surface-variant mt-1.5">Import transactions from JSON backups or download database states locally.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button onclick="exportData()" class="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-on-surface py-3 rounded-xl text-xs font-semibold transition-all">
+              <span class="material-symbols-outlined text-sm">upload</span>
+              <span>Backup Database</span>
+            </button>
+            <button onclick="document.getElementById('importFile').click()" class="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-on-surface py-3 rounded-xl text-xs font-semibold transition-all">
+              <span class="material-symbols-outlined text-sm">download</span>
+              <span>Restore Database</span>
+            </button>
+            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)" />
+          </div>
+
+          <button onclick="clearAllData()" class="w-full bg-error-container/10 hover:bg-error-container/20 text-error hover:text-white border border-error/25 py-3 rounded-xl text-sm font-semibold active:scale-98 transition-all">Reset App Data</button>
+        </div>
+
+        <!-- Cloud Sync Configuration -->
+        <div class="glass border border-white/10 rounded-2xl p-6 shadow-sm space-y-4 flex flex-col justify-between" id="settings-auth-section">
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">cloud</span>
+              <span>Cloud Sync Session</span>
+            </h3>
+            <p class="font-body text-xs text-on-surface-variant mt-1.5" id="settingsAuthStatus">
+              Checking status...
+            </p>
+          </div>
+
+          <div class="pt-2 border-t border-outline-variant/20 dark:border-white/10">
+            <button id="settingsAuthBtn" onclick="handleLogout()" class="w-full bg-error-container/10 hover:bg-error-container/20 text-error hover:text-white border border-error/25 py-3 rounded-xl text-sm font-semibold active:scale-98 transition-all">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ==================== MODALS LAYOUTS ==================== -->
+
+  <!-- 1. Add Transaction Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/60 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300 px-4" id="addModalOverlay" onclick="closeAddModal(event)">
+    <div class="glass rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl scale-95 transition-transform border border-outline-variant/15 dark:border-white/10" id="addModal">
+      <!-- Modal Tabs (Income/Expense/Transfer) -->
+      <div class="flex border-b border-outline-variant/15 dark:border-white/10 bg-black/5 dark:bg-white/5 p-2 gap-1">
+        <button class="w-full py-2.5 rounded-xl text-xs font-bold transition-all text-on-surface-variant active:scale-95" id="typeExpense" onclick="setType('expense')">Expense</button>
+        <button class="w-full py-2.5 rounded-xl text-xs font-bold transition-all text-on-surface-variant active:scale-95" id="typeIncome" onclick="setType('income')">Income</button>
+        <button class="w-full py-2.5 rounded-xl text-xs font-bold transition-all text-on-surface-variant active:scale-95" id="typeTransfer" onclick="setType('transfer')">Transfer</button>
+      </div>
+
+      <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto hide-scrollbar">
+        <div class="flex justify-between items-center">
+          <h3 class="font-headline text-lg font-bold text-on-surface" id="addModalTitle">Add Transaction</h3>
+          <button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity" onclick="closeAddModal()">close</button>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Amount (<span id="modalCurSym">₹</span>)</label>
+          <input type="number" id="txnAmount" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-3 text-lg font-bold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="0.00" min="0" step="0.01" />
+        </div>
+
+        <div class="flex flex-col gap-1.5" id="catGroup">
+          <label class="text-xs font-bold text-on-surface-variant">Category</label>
+          <div class="grid grid-cols-4 gap-2 bg-surface-container-low/40 p-3 rounded-2xl border border-outline-variant/15 dark:border-white/10 max-h-48 overflow-y-auto hide-scrollbar" id="catGrid">
+            <!-- Dynamically populated categories -->
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Account</label>
+          <select id="txnAccount" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+            <!-- Accounts populated dynamically -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-on-surface-variant">Date</label>
+            <input type="date" id="txnDate" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-on-surface-variant">Time</label>
+            <input type="time" id="txnTime" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary" />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Notes (Optional)</label>
+          <input type="text" id="txnNotes" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="e.g. Weekly grocery, dinner..." />
+        </div>
+      </div>
+
+      <div class="bg-black/5 dark:bg-white/5 p-4 border-t border-outline-variant/15 dark:border-white/10 flex justify-end gap-3">
+        <button class="bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-5 py-2.5 rounded-xl text-xs font-semibold" onclick="closeAddModal()">Cancel</button>
+        <button class="bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary border border-primary/20 px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md" onclick="saveTransaction()">Save Transaction</button>
+      </div>
     </div>
   </div>
-</div>
-
-<!-- ===== BUDGET MODAL ===== -->
-<div class="modal-overlay" id="budgetModalOverlay" onclick="closeBudgetModal(event)">
-  <div class="modal" id="budgetModal">
-    <div class="modal-header">
-      <h2>Add Budget</h2>
-      <button class="modal-close" onclick="closeBudgetModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Category</label>
-        <select class="form-input" id="budgetCat"></select>
-      </div>
-      <div class="form-group">
-        <label>Monthly Limit <span class="cur-sym" id="budgetCurSym">₹</span></label>
-        <input type="number" id="budgetAmount" class="form-input" placeholder="0.00" min="0" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeBudgetModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveBudget()">Save Budget</button>
     </div>
   </div>
-</div>
 
-<!-- ===== ACCOUNT MODAL ===== -->
-<div class="modal-overlay" id="accountModalOverlay" onclick="closeAccountModal(event)">
-  <div class="modal" id="accountModal">
-    <div class="modal-header">
-      <h2>Add Account</h2>
-      <button class="modal-close" onclick="closeAccountModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Account Name</label>
-        <input type="text" id="accountName" class="form-input" placeholder="e.g. SBI, Cash, HDFC..." />
+
+  <!-- 2. Add Budget Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/60 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300 px-4" id="budgetModalOverlay" onclick="closeBudgetModal(event)">
+    <div class="glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform border border-outline-variant/15 dark:border-white/10" id="budgetModal">
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-headline text-lg font-bold text-on-surface">Add Budget</h3>
+          <button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity" onclick="closeBudgetModal()">close</button>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Category</label>
+          <select id="budgetCat" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+            <!-- Dynamically populated categories -->
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Monthly Limit (<span id="budgetCurSym">₹</span>)</label>
+          <input type="number" id="budgetAmount" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="0.00" min="0" />
+        </div>
       </div>
-      <div class="form-group">
-        <label>Account Type</label>
-        <select class="form-input" id="accountType">
-          <option value="bank">🏦 Bank Account</option>
-          <option value="cash">💵 Cash</option>
-          <option value="credit">💳 Credit Card</option>
-          <option value="wallet">👛 Digital Wallet</option>
-        </select>
+
+      <div class="bg-black/5 dark:bg-white/5 p-4 border-t border-outline-variant/15 dark:border-white/10 flex justify-end gap-3">
+        <button class="bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-5 py-2.5 rounded-xl text-xs font-semibold" onclick="closeBudgetModal()">Cancel</button>
+        <button class="bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary border border-primary/20 px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md" onclick="saveBudget()">Save Budget</button>
       </div>
-      <div class="form-group">
-        <label>Opening Balance <span class="cur-sym" id="acctCurSym">₹</span></label>
-        <input type="number" id="accountBalance" class="form-input" placeholder="0.00" />
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeAccountModal()">Cancel</button>
-      <button class="btn-primary" onclick="saveAccount()">Save Account</button>
     </div>
   </div>
-</div>
+    </div>
+  </div>
 
-<!-- ===== TOAST ===== -->
-<div class="toast" id="toast"></div>
 
-<script src="app.js"></script>
+  <!-- 3. Add Account Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/60 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300 px-4" id="accountModalOverlay" onclick="closeAccountModal(event)">
+    <div class="glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform border border-outline-variant/15 dark:border-white/10" id="accountModal">
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-headline text-lg font-bold text-on-surface">Add Account</h3>
+          <button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity" onclick="closeAccountModal()">close</button>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Account Name</label>
+          <input type="text" id="accountName" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="e.g. Cash, SBI, Chase..." />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Account Type</label>
+          <select id="accountType" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="bank">🏦 Bank Account</option>
+            <option value="cash">💵 Cash</option>
+            <option value="credit">💳 Credit Card</option>
+            <option value="wallet">👛 Digital Wallet</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Opening Balance (<span id="acctCurSym">₹</span>)</label>
+          <input type="number" id="accountBalance" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="bg-black/5 dark:bg-white/5 p-4 border-t border-outline-variant/15 dark:border-white/10 flex justify-end gap-3">
+        <button class="bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-5 py-2.5 rounded-xl text-xs font-semibold" onclick="closeAccountModal()">Cancel</button>
+        <button class="bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary border border-primary/20 px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md" onclick="saveAccount()">Save Account</button>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+
+  <!-- 4. Log Impulse Urge Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/60 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300 px-4" id="impulseModalOverlay" onclick="closeImpulseModal(event)">
+    <div class="glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform border border-outline-variant/15 dark:border-white/10" id="impulseModal">
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-headline text-lg font-bold text-on-surface">Log Impulse Urge 🧠</h3>
+          <button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity" onclick="closeImpulseModal()">close</button>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Urge Item Name</label>
+          <input type="text" id="impulseName" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="e.g. Mechanical Keyboard, Headphones..." />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-on-surface-variant">Price (<span id="impulseCurSym">₹</span>)</label>
+            <input type="number" id="impulsePrice" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="0.00" min="0" step="0.01" />
+          </div>
+          
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-bold text-on-surface-variant">Cooling Period</label>
+            <select id="impulsePeriod" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+              <option value="24">24 Hours (Recommended)</option>
+              <option value="48">48 Hours</option>
+              <option value="72">3 Days</option>
+              <option value="168">7 Days</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Account (if bought)</label>
+          <select id="impulseAccount" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Reflection Note ("Why do you want this?")</label>
+          <input type="text" id="impulseNotes" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="Explain the urge briefly..." />
+        </div>
+      </div>
+
+      <div class="bg-black/5 dark:bg-white/5 p-4 border-t border-outline-variant/15 dark:border-white/10 flex justify-end gap-3">
+        <button class="bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-5 py-2.5 rounded-xl text-xs font-semibold" onclick="closeImpulseModal()">Cancel</button>
+        <button class="bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary border border-primary/20 px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md" onclick="saveImpulseUrge()">Lock Urge 🔒</button>
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+
+  <!-- ===== CUSTOM CATEGORY MODAL ===== -->
+  <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 dark:bg-black/60 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300 px-4" id="customCatModalOverlay" onclick="closeCreateCategoryModal(event)">
+    <div class="glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform border border-outline-variant/15 dark:border-white/10" id="customCatModal">
+      <div class="p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">category</span>
+            <span>Create Custom Category</span>
+          </h3>
+          <button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity" onclick="closeCreateCategoryModal()">close</button>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Category Name</label>
+          <input type="text" id="newCatName" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant/30" placeholder="e.g. Coffee, Subscriptions..." />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Category Type</label>
+          <select id="newCatType" class="bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="expense">Expense Category</option>
+            <option value="income">Income Category</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-bold text-on-surface-variant">Choose Color</label>
+          <div class="flex items-center gap-2">
+            <!-- Selected color preview -->
+            <div id="newCatColorPreview" class="w-8 h-8 rounded-full border border-outline-variant/15 dark:border-white/10 transition-colors shadow-sm animate-pulse" style="background-color: #ef4444;"></div>
+            <!-- Preset Color Palette -->
+            <div class="flex-grow flex justify-between p-1 bg-surface-container-low/40 rounded-xl border border-outline-variant/15 dark:border-white/10">
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #ef4444;" onclick="setNewCatColor('#ef4444')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #f97316;" onclick="setNewCatColor('#f97316')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #f59e0b;" onclick="setNewCatColor('#f59e0b')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #10b981;" onclick="setNewCatColor('#10b981')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #06b6d4;" onclick="setNewCatColor('#06b6d4')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #3b82f6;" onclick="setNewCatColor('#3b82f6')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #8b5cf6;" onclick="setNewCatColor('#8b5cf6')"></span>
+              <span class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 active:scale-95 transition-transform" style="background-color: #ec4899;" onclick="setNewCatColor('#ec4899')"></span>
+            </div>
+            <!-- Custom Color Picker -->
+            <div class="relative">
+              <input type="color" id="newCatColorInput" class="w-8 h-8 rounded-full border border-outline-variant/15 dark:border-white/10 bg-transparent cursor-pointer p-0 overflow-hidden" value="#ef4444" oninput="setNewCatColor(this.value)" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-bold text-on-surface-variant">Choose Emoji Icon</label>
+          <div class="flex gap-2">
+            <input type="text" id="newCatEmoji" class="w-14 text-center text-xl bg-surface-container-low border border-outline-variant/15 dark:border-white/10 rounded-xl py-2 text-on-surface focus:ring-1 focus:ring-primary focus:border-primary" value="☕" maxlength="2" />
+            <div class="flex-grow grid grid-cols-8 gap-1 p-2 bg-surface-container-low/40 rounded-xl border border-outline-variant/15 dark:border-white/10">
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('☕')">☕</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🍔')">🍔</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🍿')">🍿</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🍺')">🍺</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🚘')">🚘</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🎮')">🎮</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('💰')">💰</span>
+              <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('📈')">📈</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-8 gap-1 p-2 bg-surface-container-low/40 rounded-xl border border-outline-variant/15 dark:border-white/10 mt-1">
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🛍️')">🛍️</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('✈️')">✈️</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🏫')">🏫</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('💊')">💊</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🏠')">🏠</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🏋️')">🏋️</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🎁')">🎁</span>
+            <span class="text-lg cursor-pointer hover:scale-125 transition-transform text-center" onclick="setNewCatEmoji('🧼')">🧼</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-black/5 dark:bg-white/5 p-4 border-t border-outline-variant/15 dark:border-white/10 flex justify-end gap-3">
+        <button class="bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-5 py-2.5 rounded-xl text-xs font-semibold" onclick="closeCreateCategoryModal()">Cancel</button>
+        <button class="bg-primary text-white dark:bg-primary-container dark:text-on-primary-container px-6 py-2.5 rounded-xl text-xs font-semibold shadow-md hover:opacity-90 active:scale-95 transition-all" onclick="saveCustomCategory()">Create Category</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOUR MODAL ===== -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/60 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300 px-4" id="tourModalOverlay" onclick="closeTourModal(event)">
+    <div class="glass rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform border border-outline-variant/15 dark:border-white/10 flex flex-col h-[400px]" id="tourModal">
+      <div class="p-6 border-b border-outline-variant/15 dark:border-white/10 flex justify-between items-center bg-black/5 dark:bg-white/5">
+        <h3 class="font-headline text-lg font-bold text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">explore</span>
+          <span>FinFlow Interactive Tour</span>
+        </h3>
+        <button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity" onclick="closeTourModal()">close</button>
+      </div>
+      <div class="flex-grow p-6 overflow-y-auto hide-scrollbar flex flex-col justify-center" id="tourSlidesContainer">
+        <!-- Tour slides dynamically loaded -->
+      </div>
+      <div class="bg-black/5 dark:bg-white/5 p-4 border-t border-outline-variant/15 dark:border-white/10 flex justify-between items-center">
+        <div class="flex gap-1.5" id="tourDots"></div>
+        <div class="flex gap-2">
+          <button class="bg-black/5 dark:bg-white/5 border border-outline-variant/15 dark:border-white/10 text-on-surface hover:bg-black/10 dark:hover:bg-white/10 px-4 py-2 rounded-xl text-xs font-bold" id="tourPrevBtn" onclick="prevTourSlide()">Back</button>
+          <button class="bg-primary text-white dark:bg-primary-container dark:text-on-primary-container px-5 py-2 rounded-xl text-xs font-bold shadow-md animate-pulse" id="tourNextBtn" onclick="nextTourSlide()">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST BANNER ===== -->
+  <div class="fixed bottom-24 lg:bottom-10 left-1/2 lg:left-auto lg:right-10 -translate-x-1/2 lg:translate-x-0 z-50 bg-primary text-white dark:bg-primary-container dark:text-on-primary-container px-6 py-3.5 rounded-2xl shadow-2xl border border-primary/20 text-xs font-bold opacity-0 translate-y-4 transition-all duration-300 pointer-events-none" id="toast">
+    Toast message
+  </div>
+
+  <!-- Firebase SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script src="app.js"></script>
 </body>
 </html>

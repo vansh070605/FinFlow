@@ -1,58 +1,96 @@
-# Finsight – Expense Manager
+# 🌊 FinFlow – Personal Finance Tracker
 
-A powerful, beautiful, fully **offline-capable** expense manager PWA built with vanilla HTML/CSS/JavaScript.
+FinFlow is a premium, beautiful, fully **offline-capable** personal finance manager PWA built with vanilla HTML, CSS, and JavaScript, enhanced with **Firebase Authentication**, **Cloud Firestore Synchronization**, and **Custom Category Customization**. 
+
+It supports dynamic **Vivid Dark Mode** and **Flexfin Light Mode** transitions and provides a highly-polished, premium visual aesthetic.
+
+---
 
 ## ✨ Features
 
-- **📊 Dashboard** – Weekly, Monthly, and Yearly spending overview with bar + doughnut charts
-- **📋 Transactions** – Full transaction history with filters by period, type, category, and text search
-- **📅 Custom Date Range** – Filter transactions between any two dates
-- **📈 Analysis** – Deep dive into spending trends, category breakdowns with progress bars
-- **🎯 Budgets** – Set monthly limits per category with visual progress bars
-- **🏦 Accounts** – Multiple accounts (Bank, Cash, Credit, Wallet) with balance tracking
-- **📤 Export** – Export to CSV or JSON backup; import from JSON
-- **⚙️ Settings** – Custom name, currency symbol (₹ $ € £ ¥)
-- **📱 Mobile Responsive** – Bottom nav, FAB button, works on mobile browsers
-- **🌐 Offline PWA** – Installable, works fully offline via Service Worker
+- **📊 Dashboard Overview** – Weekly, Monthly, and Yearly spending overview with clean interactive Chart.js bar and doughnut charts.
+- **🔐 Firebase Authentication** – Create a personal account with Name, Email, and Password, or run in **Offline Guest Mode** (saving data to LocalStorage only).
+- **☁️ Cloud Firestore Sync** – Instantly sync your transactions, budgets, accounts, and vaults to the cloud in real-time when authenticated. Works seamlessly with local storage so you never lose data when offline.
+- **➕ Custom Categories** – Create custom categories for Expense and Income directly from the Add Transaction form. Choose from a palette of vibrant colors and popular emojis, or enter custom emojis.
+- **🎯 Monthly Budgets** – Set custom monthly spending limits per category (including custom ones) with visual progress bars.
+- **🏦 Account Ledger** – Track balances across multiple accounts (Cash, SBI Bank, Wallet, Credit Cards) with automatic ledger adjustments.
+- **🧠 Impulse Save Vault** – Lock away impulse buy urges during a customizable cooling-off period (24h/48h/3d/7d) to build healthy spending habits.
+- **🎒 Interactive Guide Tour** – A beautiful glassmorphic multi-slide interactive guided onboarding tour to walk users through features on first login.
+- **📤 Export & Import** – Export transactions to CSV or JSON; import from JSON backup.
+- **📱 PWA & Mobile Optimization** – Standalone mobile app installation, custom app icons, smooth slide-up bottom toasts, and service worker offline caching.
 
-## 🏷️ Categories
+---
 
-Others, Medical, Food & Dining, Shopping, Transport, Rent, Bills & Utilities,
-Entertainment, Gym, Travel, Education, Personal Care, Lending, Party, Mandir,
-Bet, Salary, Freelance, Investment, Gift
+## 🛠️ Technology Stack
 
-## 🚀 How to Run
+- **Frontend Core:** Semantic HTML5, Vanilla JavaScript (ES6+), Vanilla CSS (Flexbox, Grid)
+- **Styling Framework:** Tailwind CSS (fully responsive, dark/light active states)
+- **Charts:** Chart.js (customized HSL colors, responsive layouts)
+- **Database & Sync:** Cloud Firestore (Firebase SDK client-side persistence enabled)
+- **Authentication:** Firebase Auth (Email/Password credentials)
+- **PWA Config:** Service Worker (`sw.js`), Web Manifest (`manifest.json`)
 
-### Option 1: Open directly (Recommended for offline use)
-Simply open `index.html` in any modern browser (Chrome, Edge, Firefox).
+---
 
-> **Note**: Service Worker (offline caching) requires a web server. Use Option 2 for full PWA features.
+## 📂 Project Structure
 
-### Option 2: Local web server
+| File / Folder | Purpose / Description |
+|---|---|
+| `index.html` | Core UI structure, modals markup, and Firebase script bindings |
+| `app.js` | Core application logic, Firestore syncing, PWA triggers, and state management |
+| `style.css` | Global styling variables, dark/light theme tokens, and custom scrollbars |
+| `firebase-config.js` | Firebase SDK credentials configuration and persistence setups |
+| `manifest.json` | PWA installation settings (standalone mode, icons, and theme color) |
+| `sw.js` | Service Worker caching all static assets and fonts for full offline operation |
+
+---
+
+## 🚀 How to Run Locally
+
+You can launch a local server to test full PWA features:
+
 ```bash
 # Using Python
 python -m http.server 8000
-# Then open: http://localhost:8000
 
 # Using Node.js (npx)
 npx serve .
-# Then open the URL shown
 ```
 
-### Option 3: Deploy to GitHub Pages / Netlify / Vercel
-Just push this folder to a GitHub repo and enable GitHub Pages — it's all static files!
+Then visit **`http://localhost:8000`** in your browser.
 
-## 📂 Files
+---
 
-| File | Description |
-|------|-------------|
-| `index.html` | Main app HTML |
-| `style.css`  | All styles (dark theme, responsive) |
-| `app.js`     | App logic, data management, charts |
-| `manifest.json` | PWA manifest |
-| `sw.js`      | Service Worker for offline support |
+## 🌐 How to Deploy to Firebase Hosting (Recommended)
 
-## 💾 Data Storage
+Since the project uses Firebase Authentication and Cloud Firestore, **Firebase Hosting** is the easiest way to deploy the application for free. It automatically configures HTTPS (required for PWAs).
 
-All data is stored in **localStorage** – no server, no account needed, completely private.
-Export your data as JSON for backup and import it back anytime.
+### Step 1: Install Firebase CLI
+Install the tools globally on your machine:
+```bash
+npm install -g firebase-tools
+```
+
+### Step 2: Log in
+Sign in using your Google Account associated with the Firebase console:
+```bash
+firebase login
+```
+
+### Step 3: Initialize Project
+Inside your project folder, run the setup wizard:
+```bash
+firebase init hosting
+```
+- **Project Selection:** Choose **Use an existing project** and select `finflow-bb0fd`.
+- **Public Directory:** Enter `.` (the current root folder).
+- **Configure as single-page app:** Enter `y` (Yes).
+- **Setup automatic builds with GitHub:** Enter `n` (No).
+- **File Overwrites:** If it asks to overwrite `index.html`, enter `n` (No) to preserve the application code!
+
+### Step 4: Deploy
+Deploy your static assets to the cloud:
+```bash
+firebase deploy --only hosting
+```
+Once deployed, the terminal will print your live URL (e.g. `https://finflow-bb0fd.web.app`). Open this on your mobile device to install it to your home screen!

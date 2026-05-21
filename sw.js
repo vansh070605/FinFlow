@@ -1,5 +1,5 @@
 /* Finsight Service Worker – Full Offline Support */
-const CACHE = 'finsight-v1';
+const CACHE = 'finsight-v2';
 const ASSETS = [
   './',
   './index.html',
