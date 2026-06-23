@@ -1,4 +1,4 @@
-# 🌊 FinFlow – Personal Finance Tracker
+# 🌊 FinFlow – Personal Finance Tracker.
 
 FinFlow is a premium, beautiful, fully **offline-capable** personal finance manager PWA built with vanilla HTML, CSS, and JavaScript, enhanced with **Firebase Authentication**, **Cloud Firestore Synchronization**, and **Custom Category Customization**. 
 
@@ -6,7 +6,7 @@ It supports dynamic **Vivid Dark Mode** and **Flexfin Light Mode** transitions a
 
 ---
 
-## ✨ Features
+## ✨ Features as follows
 
 - **📊 Dashboard Overview** – Weekly, Monthly, and Yearly spending overview with clean interactive Chart.js bar and doughnut charts.
 - **🔐 Firebase Authentication** – Create a personal account with Name, Email, and Password, or run in **Offline Guest Mode** (saving data to LocalStorage only).
